@@ -9,5 +9,5 @@ contract Lottery{
     constructor(){
         manager = msg.sender;
         
-    
+    }
 }
