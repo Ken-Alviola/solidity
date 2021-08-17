@@ -25,5 +25,17 @@ contract Lottery{
        return uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp, players.length)));
     }
 
+    function pickWinner() public{
+        require(msg.sender == manager);
+        require(players.length >= 3);
+        
+        uint r = random();
+        address payable winner;
+        
+        uint index = r % players.length;
+        winner = players[index];
+        
+        winner.transfer(getBalance());
+    }
     
 }
