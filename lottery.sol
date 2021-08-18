@@ -11,7 +11,8 @@ contract Lottery{
         
     }
     receive() external payable{
-        // any code before require will consume gas 
+        // any code before require will consume gas
+        // must be payable and have no arguments 
         require(msg.value == 0.1 ether);
         players.push(payable(msg.sender));
     }
