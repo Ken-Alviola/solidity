@@ -8,12 +8,14 @@ contract Lottery{
     
     constructor(){
         manager = msg.sender;
+        players.push(payable(manager));
         
     }
     receive() external payable{
         // any code before require will consume gas
         // must be payable and have no arguments 
         require(msg.value == 0.1 ether);
+        require(msg.sender != manager);
         players.push(payable(msg.sender));
     }
     
@@ -36,6 +38,7 @@ contract Lottery{
         uint index = r % players.length;
         winner = players[index];
         
+        // manager.transfer(getBalance()*.1); causes error
         winner.transfer(getBalance());
         players = new address payable[](0); //resetting the Lottery
     }
