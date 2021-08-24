@@ -15,4 +15,14 @@ contract Auction{
     address payable public highestBidder;
     
     mapping(address => uint) public bids;
+    uint bidIncrement;
+    
+    constructor(){
+        owner = payable(msg.sender);
+        auctionState = State.Running;
+        startBlock = block.number;
+        endBlcok = startBlock + 40320;
+        ipfsHash = "";
+        bidIncrement = 100;
+    }
 }
