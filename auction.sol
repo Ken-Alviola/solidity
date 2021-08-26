@@ -39,7 +39,7 @@ contract Auction{
         require(block.number <= endBlock);
         _;
     }
-    
+    // minimum function since there is none builtin to solidity
     function min(uint a, uint b) pure internal returns(uint){
         if(a <= b){
             return a;
