@@ -15,6 +15,7 @@ contract Auction{
     address payable public highestBidder;
     
     mapping(address => uint) public bids;
+    
     uint bidIncrement;
     
     constructor(){
@@ -25,6 +26,7 @@ contract Auction{
         ipfsHash = "";
         bidIncrement = 100;
     }
+    
     modifier notOwner(){
         require(msg.sender != owner);
         _;
@@ -39,6 +41,12 @@ contract Auction{
         require(block.number <= endBlock);
         _;
     }
+    
+    modifier onlyOwner(){
+        require(msg.sender == owner);
+        _;
+    }
+    
     // minimum function since there is none builtin to solidity
     function min(uint a, uint b) pure internal returns(uint){
         if(a <= b){
@@ -49,6 +57,11 @@ contract Auction{
         }
         
     }
+    
+    function cancelAuction() public onlyOwner{
+        auctionState = State.Canceled;
+    }
+    
     function placeBid() public payable notOwner afterStart beforeEnd{
         require(auctionState == State.Running);
         require(msg.value >= 100);
@@ -64,4 +77,6 @@ contract Auction{
             highestBindingBid = min(currentBid, bids[highestBidder] + bidIncrement);
             highestBidder = payable(msg.sender);
         }
+        
+    }
 }
