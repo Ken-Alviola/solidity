@@ -79,4 +79,30 @@ contract Auction{
         }
         
     }
+    function finalizeAuction() public{
+        require(auctionState == State.Canceled || block.number > endBlock);
+        require(msg.sender == owner || bids[msg.sender] > 0);
+        
+        address payable recipient;
+        uint value;
+        
+        if(auctionState == State.Canceled){// auction was cancelled
+            recipient = payable(msg.sender);
+            value = bids[msg.sender];
+        }else{ // auction ended (not cancelled)
+            if(msg.sender == owner){ // this is the owner
+                recipient = owner;
+                value = highestBindingBid;
+            }else{ // this is a bidder 
+                if(msg.sender == highestBidder){
+                    recipient = highestBidder;
+                    value = bids[highestBidder] - highestBindingBid;
+                }else{ // this is neither the owner nor the highestBidder
+                    recipient = payable(msg.sender);
+                    value = bids[msg.sender];
+                }
+            }
+        }
+        recipient.transfer(value);
+    }
 }
