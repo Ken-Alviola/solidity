@@ -103,6 +103,11 @@ contract Auction{
                 }
             }
         }
+
+        //resetting the bids of the recipient
+        bids[recipient] = 0;
+
+        //sends value to the recipient
         recipient.transfer(value);
     }
 }
