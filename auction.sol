@@ -2,6 +2,15 @@
 
 pragma solidity >=0.5.0 <0.9.0;
 
+contract AuctionCreator{
+    Auction[] public auctions;
+    
+    function createAuction() public{
+        Auction newAuction = new Auction(msg.sender);
+        auctions.push(newAuction);
+    }
+}
+
 contract Auction{
     address payable public owner;
     uint public startBlock;
@@ -18,8 +27,8 @@ contract Auction{
     
     uint bidIncrement;
     
-    constructor(){
-        owner = payable(msg.sender);
+    constructor(address eoa){
+        owner = payable(eoa);
         auctionState = State.Running;
         startBlock = block.number;
         endBlock = startBlock + 40320;
@@ -103,11 +112,10 @@ contract Auction{
                 }
             }
         }
-
+        
         //resetting the bids of the recipient
         bids[recipient] = 0;
-
-        //sends value to the recipient
+        
         recipient.transfer(value);
     }
 }
