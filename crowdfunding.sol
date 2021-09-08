@@ -10,6 +10,18 @@ contract CrowdFunding{
     uint public deadline; // timestamp
     uint public goal;
     uint public raisedAmount;
+    struct Request{
+        string description;
+        address payable recipient;
+        uint value;
+        bool completed;
+        uint noOfVoters;
+        mapping(address => bool) voters;
+    }
+    
+    mapping(uint => Request) public requests;
+    
+    uint public numRequests;
     
     constructor(uint _goal, uint _deadline){
         goal = _goal;
@@ -17,6 +29,7 @@ contract CrowdFunding{
         minimumContribution = 100 wei;
         admin = msg.sender;
     }
+    
     function contribute() public payable{
         require(block.timestamp < deadline, "Deadline has passed!");
         require(msg.value >= minimumContribution, "Minimum Contribution not met!");
@@ -36,7 +49,8 @@ contract CrowdFunding{
     function getBalance() public view returns(uint){
         return address(this).balance;
     }
-      function getRefund() public{
+    
+    function getRefund() public{
         require(block.timestamp > deadline && raisedAmount < goal);
         require(contributors[msg.sender] > 0);
         
@@ -47,7 +61,24 @@ contract CrowdFunding{
         // payable(msg.sender).transfer(contributors[msg.sender]); same as above
         
         contributors[msg.sender] = 0;
-    
-        
+       
     }
+    
+    modifier onlyAdmin(){
+        require(msg.sender == admin, "Only admin can call this function!");
+        _;
+    }
+
+    function createRequest(string memory _description, address payable _recipient, uint _value) public onlyAdmin{
+        Request storage newRequest = requests[numRequests];
+        numRequests++;
+        
+        newRequest.description = _description;
+        newRequest.recipient = _recipient;
+        newRequest.value = _value;
+        newRequest.completed = false;
+        newRequest.noOfVoters = 0;
+    }
+
+    
 }
