@@ -1,11 +1,7 @@
 //SPDX-License-Identifier: GPL-3.0
 
 pragma solidity >=0.6.0 <0.9.0;
-// ----------------------------------------------------------------------------
-// EIP-20: ERC-20 Token Standard
-// https://eips.ethereum.org/EIPS/eip-20
-// -----------------------------------------
- 
+
 interface ERC20Interface {
     function totalSupply() external view returns (uint);
     function balanceOf(address tokenOwner) external view returns (uint balance);
@@ -23,7 +19,7 @@ interface ERC20Interface {
 contract Cryptos is ERC20Interface{
     string public name = "Cryptos";
     string public symbol = "CRPT";
-    uint public decimals = 0; //18 is very common
+    uint public decimals = 0; //18 is most used value
     uint public override totalSupply;
     
     address public founder;
@@ -31,8 +27,9 @@ contract Cryptos is ERC20Interface{
     // balances[0x1111...] = 100;
     
     mapping(address => mapping(address => uint)) allowed;
-    // allowed[0x111][0x222] = 100;
     
+    // 0x1111... (owner) allows 0x2222... (the spender) ---- 100 tokens
+    // allowed[0x111][0x222] = 100;
     
     constructor(){
         totalSupply = 1000000;
@@ -40,13 +37,11 @@ contract Cryptos is ERC20Interface{
         balances[founder] = totalSupply;
     }
     
-    
     function balanceOf(address tokenOwner) public view override returns (uint balance){
         return balances[tokenOwner];
     }
     
-    
-    function transfer(address to, uint tokens) public override returns(bool success){
+    function transfer(address to, uint tokens) public virtual override returns(bool success){
         require(balances[msg.sender] >= tokens);
         
         balances[to] += tokens;
@@ -56,11 +51,9 @@ contract Cryptos is ERC20Interface{
         return true;
     }
     
-    
-    function allowance(address tokenOwner, address spender) view public override returns(uint){
+    function allowance(address tokenOwner, address spender) view public  override returns(uint){
         return allowed[tokenOwner][spender];
     }
-    
     
     function approve(address spender, uint tokens) public override returns (bool success){
         require(balances[msg.sender] >= tokens);
@@ -72,17 +65,18 @@ contract Cryptos is ERC20Interface{
         return true;
     }
     
-    
-    function transferFrom(address from, address to, uint tokens) public override returns (bool success){
-         require(allowed[from][to] >= tokens);
-         require(balances[from] >= tokens);
-         
-         balances[from] -= tokens;
-         balances[to] += tokens;
-         allowed[from][to] -= tokens;
-         
-         return true;
-     }
+    function transferFrom(address from, address to, uint tokens) public virtual override returns (bool success){
+        require(allowed[from][to] >= tokens);
+        require(balances[from] >= tokens);
+        
+        balances[from] -= tokens;
+        balances[to] += tokens;
+        allowed[from][to] -= tokens;
+        
+        return true;
+        
+    }
+
 }
 
 contract CryptosICO is Cryptos{
@@ -105,6 +99,7 @@ contract CryptosICO is Cryptos{
         admin = msg.sender;
         icoState = State.beforeStart;
     }
+    
     modifier onlyAdmin(){
         require(msg.sender == admin);
         _;
@@ -134,6 +129,7 @@ contract CryptosICO is Cryptos{
         }
         
     }
+    
     event Invest(address investor, uint value, uint tokens);
     
     function invest() payable public returns(bool){
@@ -157,4 +153,17 @@ contract CryptosICO is Cryptos{
     receive() payable external{
         invest();
     }
+    
+    function transfer(address to, uint tokens) public override returns(bool success){
+        require(block.timestamp > tokenTradeStart);
+        super.transfer(to, tokens); //same as Cryptos.transfer(to,tokens);
+        return true;
+    }
+    
+    function transferFrom(address from, address to, uint tokens) public override returns (bool success){
+        require(block.timestamp > tokenTradeStart);
+        super.transferFrom(from, to, tokens); 
+        return true;
+    }
+    
 }
