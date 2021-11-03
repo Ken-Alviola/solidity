@@ -165,5 +165,10 @@ contract CryptosICO is Cryptos{
         super.transferFrom(from, to, tokens); 
         return true;
     }
-    
+    function burn() public returns(bool){
+        icoState = getCurrentState();
+        require(icoState == State.afterEnd);
+        balances[founder] = 0;
+        return true;
+    }
 }
